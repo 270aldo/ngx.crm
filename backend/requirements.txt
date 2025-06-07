@@ -8,3 +8,5 @@ openai
 beautifulsoup4
 requests
 supabase
+black==25.1.0
+ruff==0.11.10

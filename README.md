@@ -27,3 +27,21 @@ make run-frontend
 The backend server runs on port 8000 and the frontend development server runs on port 5173. The frontend Vite server proxies API requests to the backend on port 8000.
 
 Visit <http://localhost:5173> to view the application.
+
+## Linting and formatting
+
+For the backend Python code run:
+
+```bash
+cd backend
+black .
+ruff .
+```
+
+For the frontend run:
+
+```bash
+cd frontend
+yarn lint
+yarn format
+```

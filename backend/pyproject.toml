@@ -8,3 +8,15 @@ dependencies = [
     "fastapi>=0.115.8",
     "uvicorn>=0.34.0",
 ]
+
+[tool.black]
+line-length = 88
+target-version = ["py311"]
+
+[tool.ruff]
+line-length = 88
+extend-exclude = [
+    "venv",
+    ".venv",
+    "databutton_app",
+]
