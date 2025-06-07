@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { TaskList } from "components/TaskList";
 import { TaskForm } from "components/TaskForm";
-import { PlusCircle, Edit, Trash2 } from "lucide-react";
+import { PlusCircle } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -16,44 +16,6 @@ import {
 import { toast } from "sonner";
 import brain from "brain"; // Import brain client
 import { TaskRead, TaskCreate, TaskUpdate } from "brain/data-contracts"; // Import types
-
-// Mock data for initial display - to be replaced by API call
-const mockTasks: TaskRead[] = [
-  {
-    id: "1",
-    title: "Follow up with Client X",
-    description: "Discuss new proposal and gather feedback.",
-    due_date: "2024-05-25T10:00:00Z",
-    status: "In Progress",
-    priority: "High",
-    created_at: "2024-05-20T09:00:00Z",
-    updated_at: "2024-05-20T11:00:00Z",
-    created_by_user_id: "user-123",
-  },
-  {
-    id: "2",
-    title: "Prepare Q3 Report",
-    description: "Compile sales data and generate report.",
-    due_date: "2024-06-15T17:00:00Z",
-    status: "To Do",
-    priority: "Medium",
-    created_at: "2024-05-18T14:00:00Z",
-    updated_at: "2024-05-18T14:00:00Z",
-    assigned_to_user_id: "user-456",
-  },
-  {
-    id: "3",
-    title: "Team Meeting",
-    description: "Weekly sync-up and project updates.",
-    due_date: "2024-05-22T11:00:00Z",
-    status: "Completed",
-    priority: "Low",
-    created_at: "2024-05-15T10:00:00Z",
-    updated_at: "2024-05-22T12:00:00Z",
-    completed_at: "2024-05-22T12:00:00Z",
-  },
-];
-
 const TasksPage: React.FC = () => {
   const [tasks, setTasks] = useState<TaskRead[]>([]); // Use TaskRead, initialize empty
   const [isLoading, setIsLoading] = useState(true); // Start with loading true
