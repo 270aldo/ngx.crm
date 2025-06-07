@@ -1,4 +1,5 @@
 import os
+import logging
 from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel, Field
 from typing import Optional, List, Dict, Any
@@ -6,6 +7,8 @@ from uuid import UUID
 from datetime import datetime, timedelta
 import databutton as db
 from supabase import create_client, Client
+
+logger = logging.getLogger(__name__)
 
 # Supabase client initialization
 # Ensure SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are in db.secrets
@@ -178,10 +181,10 @@ async def get_pipeline_stats(range_filter: Optional[str] = None, supabase: Clien
         )
 
     except Exception as e:
-        print(f"Error fetching pipeline stats from Supabase: {e}")
+        logger.exception("Error fetching pipeline stats from Supabase")
         # Fallback to mock data or raise error, for now raising error
         # You might want to return the mock_stats structure on error for frontend stability
         # For development, it's good to see the error.
-        raise HTTPException(status_code=500, detail=f"An error occurred while fetching analytics data: {str(e)}") from e
+        raise HTTPException(status_code=500, detail=f"Database error while fetching analytics data: {str(e)}") from e
 
 # Remove or comment out the old mock data generation part if it was separate
