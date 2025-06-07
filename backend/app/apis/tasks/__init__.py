@@ -1,12 +1,15 @@
 import os
+import logging
 from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel, Field
 from typing import Optional, List
 from uuid import UUID, uuid4
 from datetime import datetime
 
-import databutton as db # To access secrets
+import databutton as db  # To access secrets
 from supabase import create_client, Client
+
+logger = logging.getLogger(__name__)
 
 # Initialize Supabase client
 SUPABASE_URL = db.secrets.get("SUPABASE_URL")
@@ -15,7 +18,7 @@ SUPABASE_KEY = db.secrets.get("SUPABASE_SERVICE_ROLE_KEY")
 if not SUPABASE_URL or not SUPABASE_KEY:
     # This will help in debugging if secrets are not loaded correctly
     # In a production scenario, you might want to handle this more gracefully
-    print("Error: SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY not found in secrets.")
+    logger.error("SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY not found in secrets.")
     # Depending on your app's needs, you might raise an exception or have a fallback
     # For now, we'll allow it to proceed, but supabase client will be None
     supabase: Client | None = None
@@ -103,8 +106,8 @@ async def create_task(task_data: TaskCreate):
     try:
         response = supabase.table("tasks").insert(task_dict).execute()
     except Exception as e:
-        print(f"Supabase error: {e}") # Log the detailed error
-        raise HTTPException(status_code=500, detail=f"Error creating task in Supabase: {str(e)}") from e
+        logger.exception("Supabase error while creating task")
+        raise HTTPException(status_code=500, detail=f"Database error while creating task: {str(e)}") from e
 
     if not response.data:
         # This condition might need adjustment based on actual Supabase client behavior for errors
@@ -154,8 +157,8 @@ async def list_tasks(
     try:
         response = query.execute()
     except Exception as e:
-        print(f"Supabase error: {e}")
-        raise HTTPException(status_code=500, detail=f"Error listing tasks from Supabase: {str(e)}") from e
+        logger.exception("Supabase error while listing tasks")
+        raise HTTPException(status_code=500, detail=f"Database error while listing tasks: {str(e)}") from e
 
     if not response.data:
         # It's okay to return an empty list if no tasks match the criteria
@@ -173,8 +176,8 @@ async def get_task(task_id: UUID):
     try:
         response = supabase.table("tasks").select("*").eq("id", str(task_id)).single().execute()
     except Exception as e:
-        print(f"Supabase error: {e}")
-        raise HTTPException(status_code=500, detail=f"Error fetching task from Supabase: {str(e)}") from e
+        logger.exception("Supabase error while fetching task")
+        raise HTTPException(status_code=500, detail=f"Database error while fetching task: {str(e)}") from e
 
     if not response.data:
         raise HTTPException(status_code=404, detail=f"Task with id {task_id} not found")
@@ -208,8 +211,8 @@ async def update_task(task_id: UUID, task_update_data: TaskUpdate):
     try:
         response = supabase.table("tasks").update(update_data_dict).eq("id", str(task_id)).execute()
     except Exception as e:
-        print(f"Supabase error: {e}")
-        raise HTTPException(status_code=500, detail=f"Error updating task in Supabase: {str(e)}") from e
+        logger.exception("Supabase error while updating task")
+        raise HTTPException(status_code=500, detail=f"Database error while updating task: {str(e)}") from e
 
     if not response.data:
         # This could mean the task_id was not found, or other issues.
@@ -232,8 +235,8 @@ async def delete_task(task_id: UUID):
         
         response = supabase.table("tasks").delete().eq("id", str(task_id)).execute()
     except Exception as e:
-        print(f"Supabase error: {e}")
-        raise HTTPException(status_code=500, detail=f"Error deleting task from Supabase: {str(e)}") from e
+        logger.exception("Supabase error while deleting task")
+        raise HTTPException(status_code=500, detail=f"Database error while deleting task: {str(e)}") from e
 
     # Check if any data was returned, which implies a row was deleted.
     # Supabase delete operation might return data of the deleted row(s).
