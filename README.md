@@ -22,6 +22,22 @@ make run-backend
 make run-frontend
 ```
 
+## Linting and formatting
+
+Run backend checks with:
+
+```bash
+make lint-backend
+make format-backend
+```
+
+Run frontend checks with:
+
+```bash
+make lint-frontend
+make format-frontend
+```
+
 ## Gotchas
 
 The backend server runs on port 8000 and the frontend development server runs on port 5173. The frontend Vite server proxies API requests to the backend on port 8000.
