@@ -5,22 +5,34 @@ from typing import Optional, List
 from uuid import UUID, uuid4
 from datetime import datetime
 
-import databutton as db # To access secrets
 from supabase import create_client, Client
 
-# Initialize Supabase client
-SUPABASE_URL = db.secrets.get("SUPABASE_URL")
-SUPABASE_KEY = db.secrets.get("SUPABASE_SERVICE_ROLE_KEY")
+def get_supabase_credentials():
+    """Get Supabase credentials from Databutton or environment variables"""
+    supabase_url = None
+    supabase_key = None
+    
+    # Try Databutton first (for deployed environment)
+    try:
+        import databutton as db
+        supabase_url = db.secrets.get("SUPABASE_URL")
+        supabase_key = db.secrets.get("SUPABASE_SERVICE_ROLE_KEY")
+    except (ImportError, Exception):
+        # Fallback to environment variables (for local development)
+        pass
+    
+    # If Databutton didn't work, try environment variables
+    if not supabase_url or not supabase_key:
+        supabase_url = supabase_url or os.getenv("SUPABASE_URL")
+        supabase_key = supabase_key or os.getenv("SUPABASE_SERVICE_ROLE_KEY")
+    
+    return supabase_url, supabase_key
 
-if not SUPABASE_URL or not SUPABASE_KEY:
-    # This will help in debugging if secrets are not loaded correctly
-    # In a production scenario, you might want to handle this more gracefully
-    print("Error: SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY not found in secrets.")
-    # Depending on your app's needs, you might raise an exception or have a fallback
-    # For now, we'll allow it to proceed, but supabase client will be None
-    supabase: Client | None = None
-else:
-    supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+def get_supabase_client():
+    supabase_url, supabase_key = get_supabase_credentials()
+    if not supabase_url or not supabase_key:
+        raise HTTPException(status_code=500, detail="Supabase URL or Key not configured.")
+    return create_client(supabase_url, supabase_key)
 
 router = APIRouter(
     prefix="/api/v1/tasks",
@@ -71,9 +83,7 @@ class TaskRead(TaskBase):
 # --- API Endpoints --- #
 
 @router.post("", response_model=TaskRead)
-async def create_task(task_data: TaskCreate):
-    if supabase is None:
-        raise HTTPException(status_code=500, detail="Supabase client not initialized. Check secrets.")
+async def create_task(task_data: TaskCreate, supabase: Client = Depends(get_supabase_client)):
     
     # Prepare data for Supabase. Pydantic models can convert UUIDs to str for JSON.
     # Supabase client typically handles this, but good to be aware.
@@ -132,9 +142,8 @@ async def list_tasks(
     related_deal_id: Optional[UUID] = None,
     limit: int = 20, # Default limit to 20 tasks
     offset: int = 0, # Default offset to 0
+    supabase: Client = Depends(get_supabase_client)
 ):
-    if supabase is None:
-        raise HTTPException(status_code=500, detail="Supabase client not initialized. Check secrets.")
 
     query = supabase.table("tasks").select("*")
 
@@ -166,9 +175,7 @@ async def list_tasks(
     return tasks
 
 @router.get("/{task_id}", response_model=TaskRead)
-async def get_task(task_id: UUID):
-    if supabase is None:
-        raise HTTPException(status_code=500, detail="Supabase client not initialized. Check secrets.")
+async def get_task(task_id: UUID, supabase: Client = Depends(get_supabase_client)):
 
     try:
         response = supabase.table("tasks").select("*").eq("id", str(task_id)).single().execute()
@@ -182,9 +189,7 @@ async def get_task(task_id: UUID):
     return TaskRead(**response.data)
 
 @router.patch("/{task_id}", response_model=TaskRead)
-async def update_task(task_id: UUID, task_update_data: TaskUpdate):
-    if supabase is None:
-        raise HTTPException(status_code=500, detail="Supabase client not initialized. Check secrets.")
+async def update_task(task_id: UUID, task_update_data: TaskUpdate, supabase: Client = Depends(get_supabase_client)):
 
     update_data_dict = task_update_data.model_dump(exclude_unset=True) # Only include fields that were actually provided
 
@@ -220,9 +225,7 @@ async def update_task(task_id: UUID, task_update_data: TaskUpdate):
     return TaskRead(**response.data[0])
 
 @router.delete("/{task_id}", status_code=204) # 204 No Content is typical for successful DELETE
-async def delete_task(task_id: UUID):
-    if supabase is None:
-        raise HTTPException(status_code=500, detail="Supabase client not initialized. Check secrets.")
+async def delete_task(task_id: UUID, supabase: Client = Depends(get_supabase_client)):
 
     try:
         # First, check if the task exists to provide a 404 if not found

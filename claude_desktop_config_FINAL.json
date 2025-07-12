@@ -1,0 +1,16 @@
+{
+  "globalShortcut": "Cmd+Shift+Space",
+  "menuBarIcon": true,
+  "mcpServers": {
+    "nexus-crm": {
+      "command": "python3",
+      "args": [
+        "/Users/aldoolivas/Desktop/nexus-crm/nexus_crm_mcp_server.py"
+      ],
+      "env": {
+        "SUPABASE_URL": "https://yzhncjghjlpgwdnurdvm.supabase.co",
+        "SUPABASE_SERVICE_ROLE_KEY": "REEMPLAZAR_CON_TU_SERVICE_ROLE_KEY_REAL"
+      }
+    }
+  }
+}

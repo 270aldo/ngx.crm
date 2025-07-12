@@ -11,12 +11,15 @@ const ClientProfilePage = lazy(() => import("./pages/ClientProfilePage.tsx"));
 const LoginPage = lazy(() => import("./pages/LoginPage.tsx"));
 const PipelinePage = lazy(() => import("./pages/PipelinePage.tsx"));
 const TasksPage = lazy(() => import("./pages/TasksPage.tsx"));
+const DashboardPage = lazy(() => import("./pages/DashboardPage.tsx"));
 
 export const userRoutes: RouteObject[] = [
 
 	{ path: "/analytics-page", element: <AnalyticsPage />},
 	{ path: "/analyticspage", element: <AnalyticsPage />},
-	{ path: "/", element: <App />},
+	{ path: "/", element: <App />, children: [
+		{ index: true, element: <DashboardPage /> }
+	]},
 	{ path: "/client-profile-page", element: <ClientProfilePage />},
 	{ path: "/clientprofilepage", element: <ClientProfilePage />},
 	{ path: "/login-page", element: <LoginPage />},

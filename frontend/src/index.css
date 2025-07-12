@@ -1,72 +1,314 @@
+/* Import NGX Design System */
+@import url('./styles/ngx-design-tokens.css');\n@import url('./styles/ngx-mobile-optimizations.css');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-
 @layer base {
   :root {
-    --background: 0 0% 0%; /* Black background */
-    --foreground: 0 0% 98%; /* Light text for dark background */
-    --card: 240 10% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 240 10% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 262 100% 50%; /* Premium Violet #6D00FF */
-    --primary-foreground: 0 0% 98%; /* White text on primary */
-    --secondary: 240 3.7% 15.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
-    --accent: 240 3.7% 15.9%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 262 100% 50%; /* Premium Violet for ring */
-    --radius: 0.5rem;
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
+    /* Override Shadcn/ui variables with NGX Design System */
+    --background: 0 0% 0%; /* NGX Black Onyx */
+    --foreground: 0 0% 100%; /* NGX White */
+    --card: 264 63% 62% / 0.05; /* NGX Electric Violet with opacity */
+    --card-foreground: 0 0% 100%;
+    --popover: 264 63% 62% / 0.1;
+    --popover-foreground: 0 0% 100%;
+    --primary: 264 63% 62%; /* NGX Electric Violet */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 263 69% 42%; /* NGX Deep Purple */
+    --secondary-foreground: 0 0% 100%;
+    --muted: 264 63% 62% / 0.05;
+    --muted-foreground: 0 0% 20%;
+    --accent: 264 63% 62%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 264 63% 62% / 0.2;
+    --input: 264 63% 62% / 0.05;
+    --ring: 264 63% 62%;
+    --radius: 0.75rem; /* NGX default radius */
+    
+    /* NGX Chart Colors */
+    --chart-1: 264 63% 62%; /* Electric Violet */
+    --chart-2: 263 69% 42%; /* Deep Purple */
+    --chart-3: 43 96% 56%; /* NGX Prime */
+    --chart-4: 158 64% 52%; /* NGX Longevity */
+    --chart-5: 237 67% 68%; /* NGX Custom */
   }
 
   .dark {
-    --background: 0 0% 0%; /* Black background */
-    --foreground: 0 0% 98%; /* Light text for dark background */
-    --card: 240 10% 3.9%; /* Slightly lighter than background for cards */
-    --card-foreground: 0 0% 98%;
-    --popover: 240 10% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 262 100% 50%; /* Premium Violet #6D00FF */
-    --primary-foreground: 0 0% 98%; /* White text on primary */
-    --secondary: 240 3.7% 15.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
-    --accent: 240 3.7% 15.9%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 3.7% 25%; /* Slightly lighter border for dark theme */
-    --input: 240 3.7% 15.9%;
-    --ring: 262 100% 50%; /* Premium Violet for ring */
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
+    /* Dark mode inherits the same values for NGX design */
+    --background: 0 0% 0%;
+    --foreground: 0 0% 100%;
+    --card: 264 63% 62% / 0.05;
+    --card-foreground: 0 0% 100%;
+    --popover: 264 63% 62% / 0.1;
+    --popover-foreground: 0 0% 100%;
+    --primary: 264 63% 62%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 263 69% 42%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 264 63% 62% / 0.05;
+    --muted-foreground: 0 0% 20%;
+    --accent: 264 63% 62%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 264 63% 62% / 0.2;
+    --input: 264 63% 62% / 0.05;
+    --ring: 264 63% 62%;
   }
 }
-
 
 @layer base {
   * {
     @apply border-border;
+    box-sizing: border-box;
   }
+  
+  html {
+    font-family: var(--ngx-font-secondary);
+    background-color: var(--ngx-background);
+    color: var(--ngx-text-primary);
+    scroll-behavior: smooth;
+  }
+  
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  
+  /* NGX Typography Enhancements */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--ngx-font-primary);
+    font-weight: var(--ngx-font-semibold);
+    line-height: 1.2;
+    color: var(--ngx-text-primary);
+  }
+  
+  h1 {
+    font-size: var(--ngx-text-4xl);
+  }
+  
+  h2 {
+    font-size: var(--ngx-text-3xl);
+  }
+  
+  h3 {
+    font-size: var(--ngx-text-2xl);
+  }
+  
+  h4 {
+    font-size: var(--ngx-text-xl);
+  }
+  
+  /* NGX Focus Styles */
+  :focus {
+    outline: 2px solid var(--ngx-electric-violet);
+    outline-offset: 2px;
+  }
+  
+  /* NGX Scrollbar Styles */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    background: rgba(139, 92, 246, 0.1);
+    border-radius: 4px;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: var(--ngx-electric-violet);
+    border-radius: 4px;
+    transition: background var(--ngx-duration-normal);
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--ngx-deep-purple);
+  }
+  
+  /* NGX Selection Styles */
+  ::selection {
+    background: var(--ngx-electric-violet);
+    color: var(--ngx-white);
+  }
+  
+  ::-moz-selection {
+    background: var(--ngx-electric-violet);
+    color: var(--ngx-white);
+  }
+}
+
+@layer components {
+  /* NGX Enhanced Button Styles */
+  .btn-ngx-primary {
+    @apply ngx-btn-primary;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--ngx-space-2);
+    font-size: var(--ngx-text-sm);
+    text-decoration: none;
+    white-space: nowrap;
+    user-select: none;
+    transition: all var(--ngx-duration-normal) var(--ngx-ease-out);
+  }
+  
+  .btn-ngx-primary:focus {
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.5);
+  }
+  
+  .btn-ngx-primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+  
+  /* NGX Enhanced Card Styles */
+  .card-ngx {
+    @apply ngx-card;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .card-ngx::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--ngx-electric-violet), transparent);
+    opacity: 0;
+    transition: opacity var(--ngx-duration-normal);
+  }
+  
+  .card-ngx:hover::before {
+    opacity: 1;
+  }
+  
+  /* NGX Loading Spinner */
+  .ngx-spinner {
+    width: 24px;
+    height: 24px;
+    border: 2px solid rgba(139, 92, 246, 0.2);
+    border-radius: 50%;
+    border-top-color: var(--ngx-electric-violet);
+    animation: spin 1s linear infinite;
+  }
+  
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  
+  /* NGX Progress Bar */
+  .ngx-progress {
+    width: 100%;
+    height: 4px;
+    background: rgba(139, 92, 246, 0.1);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  
+  .ngx-progress-bar {
+    height: 100%;
+    background: var(--ngx-gradient-primary);
+    border-radius: 2px;
+    transition: width var(--ngx-duration-normal);
+  }
+  
+  /* NGX Input Enhancements */
+  .input-ngx {
+    @apply ngx-input;
+    width: 100%;
+    min-height: 40px;
+    resize: vertical;
+  }
+  
+  .input-ngx:focus {
+    border-color: var(--ngx-electric-violet);
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+  }
+  
+  /* NGX Badge */
+  .badge-ngx {
+    display: inline-flex;
+    align-items: center;
+    padding: var(--ngx-space-1) var(--ngx-space-3);
+    font-size: var(--ngx-text-xs);
+    font-weight: var(--ngx-font-medium);
+    font-family: var(--ngx-font-primary);
+    border-radius: var(--ngx-radius-full);
+    background: var(--ngx-gradient-primary);
+    color: var(--ngx-white);
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+  }
+  
+  .badge-ngx-outline {
+    background: transparent;
+    border: 1px solid var(--ngx-electric-violet);
+    color: var(--ngx-electric-violet);
+  }
+}
+
+@layer utilities {
+  /* NGX Animation Utilities */
+  .animate-ngx-glow {
+    animation: ngx-glow 2s ease-in-out infinite;
+  }
+  
+  .animate-ngx-float {
+    animation: ngx-float 3s ease-in-out infinite;
+  }
+  
+  .animate-ngx-scale {
+    animation: ngx-scale 2s ease-in-out infinite;
+  }
+  
+  /* NGX Hover Effects */
+  .hover-ngx-lift {
+    transition: transform var(--ngx-duration-normal);
+  }
+  
+  .hover-ngx-lift:hover {
+    transform: translateY(-4px);
+  }
+  
+  .hover-ngx-glow:hover {
+    box-shadow: var(--ngx-glow-md);
+  }
+  
+  /* NGX Text Utilities */
+  .text-ngx-gradient {
+    background: var(--ngx-gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  /* NGX Layout Utilities */
+  .container-ngx {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 var(--ngx-space-6);
+  }
+  
+  @media (max-width: 768px) {
+    .container-ngx {
+      padding: 0 var(--ngx-space-4);
+    }
   }
 }

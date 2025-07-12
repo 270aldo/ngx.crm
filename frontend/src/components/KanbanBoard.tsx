@@ -8,8 +8,8 @@ import {
 } from "@dnd-kit/core";
 import KanbanColumn from "./KanbanColumn";
 import { Deal } from "./DealCard";
-import { supabase } from "../utils/supabaseClient";
-import { toast } from "sonner"; // Import toast for notifications
+import { api } from "../services/api";
+import { toast } from "sonner";
 
 export interface Stage {
   id: UniqueIdentifier;
@@ -41,63 +41,44 @@ const KanbanBoard: React.FC = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      // ... (fetchData implementation remains the same)
       setLoadingStages(true);
       setLoadingDeals(true);
       setErrorData(null);
 
       try {
-        const { data: stagesData, error: stagesError } = await supabase
-          .from("deal_stages")
-          .select("id, name, pipeline_order")
-          .order("pipeline_order", { ascending: true });
+        // Fetch stages
+        const stagesData = await api.deals.getStages();
+        setStages(stagesData || []);
 
-        if (stagesError) throw new Error(`Stages Error: ${stagesError.message}`);
-        setStages((stagesData as Stage[]) || []);
-
-        const { data: dealsData, error: dealsError } = await supabase
-          .from("deals")
-          .select("id, name, value_amount, deal_stage_id, contact_id");
-
-        if (dealsError) throw new Error(`Deals Error: ${dealsError.message}`);
-        const fetchedSupabaseDeals: SupabaseDeal[] = (dealsData as SupabaseDeal[]) || [];
-
-        let processedDeals: DealWithStage[] = [];
-
-        if (fetchedSupabaseDeals.length > 0) {
-          const contactIds = [
-            ...new Set(
-              fetchedSupabaseDeals
-                .map((deal) => deal.contact_id)
-                .filter((id): id is number => id !== null)
-            ),
-          ];
-
-          let contactsMap: Record<number, string> = {};
-          if (contactIds.length > 0) {
-            const { data: contactsData, error: contactsError } = await supabase
-              .from("contacts")
-              .select("id, name")
-              .in_("id", contactIds);
-
-            if (contactsError) throw new Error(`Contacts Error: ${contactsError.message}`);
-            (contactsData as SupabaseContact[])?.forEach((contact) => {
-              contactsMap[contact.id] = contact.name;
-            });
+        // Fetch deals
+        const dealsData = await api.deals.list();
+        
+        // Process deals to get contact names
+        const processedDeals: DealWithStage[] = [];
+        
+        for (const deal of dealsData) {
+          let clientName = "No Contact";
+          
+          if (deal.contact_id) {
+            try {
+              const contact = await api.contacts.get(deal.contact_id);
+              clientName = contact.name || "Unknown Contact";
+            } catch (error) {
+              console.warn(`Failed to fetch contact ${deal.contact_id}:`, error);
+              clientName = "Unknown Contact";
+            }
           }
 
-          processedDeals = fetchedSupabaseDeals.map((deal) => ({
+          processedDeals.push({
             id: deal.id,
             name: deal.name,
             value: deal.value_amount || 0,
-            clientName:
-              deal.contact_id
-                ? contactsMap[deal.contact_id] || "Unknown Contact"
-                : "No Contact",
+            clientName,
             stageId: deal.deal_stage_id,
-            contactId: deal.contact_id, // Pass contactId
-          }));
+            contactId: deal.contact_id,
+          });
         }
+        
         setDeals(processedDeals);
       } catch (err: any) {
         console.error("Error fetching data:", err);
@@ -128,18 +109,10 @@ const KanbanBoard: React.FC = () => {
       );
 
       try {
-        const { error: updateError } = await supabase
-          .from("deals")
-          .update({ deal_stage_id: targetStageId })
-          .eq("id", activeDealId);
-
-        if (updateError) {
-          throw updateError;
-        }
-        // toast.success(`Deal "${active.data.current.deal.name}" moved successfully.`); // Optional success toast
-        console.log(`Deal ${activeDealId} successfully moved to stage ${targetStageId} in Supabase.`);
+        await api.deals.moveToStage(activeDealId.toString(), targetStageId.toString());
+        console.log(`Deal ${activeDealId} successfully moved to stage ${targetStageId}.`);
       } catch (error: any) {
-        console.error("Failed to update deal stage in Supabase:", error);
+        console.error("Failed to update deal stage:", error);
         toast.error(`Failed to move deal: ${error.message}`);
         // Revert UI update on error
         setDeals((prevDeals) =>

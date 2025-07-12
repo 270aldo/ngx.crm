@@ -4,18 +4,34 @@ from pydantic import BaseModel, Field
 from typing import Optional, List, Dict, Any
 from uuid import UUID
 from datetime import datetime, timedelta
-import databutton as db
 from supabase import create_client, Client
 
-# Supabase client initialization
-# Ensure SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are in db.secrets
-SUPABASE_URL = db.secrets.get("SUPABASE_URL")
-SUPABASE_KEY = db.secrets.get("SUPABASE_SERVICE_ROLE_KEY")
+def get_supabase_credentials():
+    """Get Supabase credentials from Databutton or environment variables"""
+    supabase_url = None
+    supabase_key = None
+    
+    # Try Databutton first (for deployed environment)
+    try:
+        import databutton as db
+        supabase_url = db.secrets.get("SUPABASE_URL")
+        supabase_key = db.secrets.get("SUPABASE_SERVICE_ROLE_KEY")
+    except (ImportError, Exception):
+        # Fallback to environment variables (for local development)
+        pass
+    
+    # If Databutton didn't work, try environment variables
+    if not supabase_url or not supabase_key:
+        supabase_url = supabase_url or os.getenv("SUPABASE_URL")
+        supabase_key = supabase_key or os.getenv("SUPABASE_SERVICE_ROLE_KEY")
+    
+    return supabase_url, supabase_key
 
 def get_supabase_client():
-    if not SUPABASE_URL or not SUPABASE_KEY:
-        raise HTTPException(status_code=500, detail="Supabase URL or Key not configured in secrets.")
-    return create_client(SUPABASE_URL, SUPABASE_KEY)
+    supabase_url, supabase_key = get_supabase_credentials()
+    if not supabase_url or not supabase_key:
+        raise HTTPException(status_code=500, detail="Supabase URL or Key not configured.")
+    return create_client(supabase_url, supabase_key)
 
 router = APIRouter(
     prefix="/api/v1/analytics",

@@ -1,0 +1,425 @@
+/**
+ * NGX Mobile Optimizations
+ * 
+ * Optimizaciones específicas para dispositivos móviles
+ * Incluye touch interactions, responsive design y performance
+ */
+
+/* ===== MOBILE DETECTION ===== */
+.ngx-mobile {
+  /* Mobile-specific optimizations */
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: rgba(139, 92, 246, 0.3);
+  touch-action: manipulation;
+}
+
+/* ===== TOUCH INTERACTIONS ===== */
+
+/* Enhanced touch targets */
+.ngx-mobile button,
+.ngx-mobile .btn-ngx-primary,
+.ngx-mobile [role="button"] {
+  min-height: 44px;
+  min-width: 44px;
+  padding: var(--ngx-space-3) var(--ngx-space-4);
+}
+
+/* Touch feedback */
+.ngx-touch-active {
+  transform: scale(0.95);
+  opacity: 0.8;
+  transition: all 150ms ease-out;
+}
+
+/* Improved tap targets for navigation */
+.ngx-mobile nav button {
+  padding: var(--ngx-space-4) var(--ngx-space-3);
+  margin: var(--ngx-space-1) 0;
+}
+
+/* ===== RESPONSIVE TYPOGRAPHY ===== */
+
+@media (max-width: 768px) {
+  :root {
+    /* Adjust font sizes for mobile */
+    --ngx-text-4xl: 2rem;        /* Reduced from 2.25rem */
+    --ngx-text-3xl: 1.75rem;     /* Reduced from 1.875rem */
+    --ngx-text-2xl: 1.5rem;      /* Reduced from 1.5rem */
+    --ngx-text-xl: 1.25rem;      /* Reduced from 1.25rem */
+    
+    /* Adjust spacing for mobile */
+    --ngx-space-8: 1.5rem;       /* Reduced from 2rem */
+    --ngx-space-10: 2rem;        /* Reduced from 2.5rem */
+    --ngx-space-12: 2.5rem;      /* Reduced from 3rem */
+    --ngx-space-16: 3rem;        /* Reduced from 4rem */
+  }
+
+  /* Mobile heading adjustments */
+  h1 {
+    font-size: var(--ngx-text-3xl);
+    line-height: 1.1;
+  }
+
+  h2 {
+    font-size: var(--ngx-text-2xl);
+    line-height: 1.2;
+  }
+
+  h3 {
+    font-size: var(--ngx-text-xl);
+    line-height: 1.3;
+  }
+}
+
+/* ===== MOBILE LAYOUT OPTIMIZATIONS ===== */
+
+@media (max-width: 768px) {
+  /* Container adjustments */
+  .container-ngx {
+    padding: 0 var(--ngx-space-4);
+    max-width: 100%;
+  }
+
+  /* Grid optimizations */
+  .grid {
+    gap: var(--ngx-space-4);
+  }
+
+  /* Force single column on mobile for complex grids */
+  .grid-cols-1.md\:grid-cols-2,
+  .grid-cols-1.md\:grid-cols-3,
+  .grid-cols-1.lg\:grid-cols-3,
+  .grid-cols-1.xl\:grid-cols-2,
+  .grid-cols-1.xl\:grid-cols-3 {
+    grid-template-columns: 1fr;
+  }
+
+  /* Sidebar becomes full width on mobile */
+  aside {
+    width: 100%;
+    position: fixed;
+    top: 0;
+    left: -100%;
+    height: 100vh;
+    z-index: var(--ngx-z-overlay);
+    transition: left var(--ngx-duration-normal) ease-out;
+  }
+
+  aside.ngx-mobile-open {
+    left: 0;
+  }
+
+  /* Main content adjustments when sidebar is hidden */
+  main {
+    margin-left: 0;
+    padding: var(--ngx-space-4);
+  }
+
+  /* Card optimizations */
+  .ngx-card {
+    padding: var(--ngx-space-4);
+    margin-bottom: var(--ngx-space-4);
+  }
+}
+
+/* ===== TOUCH-FRIENDLY COMPONENTS ===== */
+
+/* Enhanced buttons for mobile */
+@media (max-width: 768px) {
+  .ngx-btn-primary {
+    padding: var(--ngx-space-4) var(--ngx-space-6);
+    font-size: var(--ngx-text-base);
+    border-radius: var(--ngx-radius-xl);
+  }
+
+  /* Input optimizations */
+  .ngx-input,
+  .input-ngx {
+    min-height: 48px;
+    font-size: 16px; /* Prevents zoom on iOS */
+    padding: var(--ngx-space-3) var(--ngx-space-4);
+  }
+
+  /* Select and dropdown optimizations */
+  select,
+  .ngx-select {
+    min-height: 48px;
+    font-size: 16px;
+  }
+}
+
+/* ===== MOBILE NAVIGATION ===== */
+
+/* Mobile hamburger menu */
+.ngx-mobile-menu-toggle {
+  display: none;
+  background: none;
+  border: none;
+  padding: var(--ngx-space-2);
+  cursor: pointer;
+  z-index: calc(var(--ngx-z-overlay) + 1);
+}
+
+@media (max-width: 768px) {
+  .ngx-mobile-menu-toggle {
+    display: block;
+  }
+}
+
+/* Mobile menu overlay */
+.ngx-mobile-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: calc(var(--ngx-z-overlay) - 1);
+  backdrop-filter: blur(4px);
+}
+
+.ngx-mobile-overlay.active {
+  display: block;
+}
+
+/* ===== PERFORMANCE OPTIMIZATIONS ===== */
+
+/* Reduce motion for users who prefer it */
+.ngx-reduce-motion,
+.ngx-reduce-motion * {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
+/* Optimize animations for mobile */
+@media (max-width: 768px) {
+  .animate-ngx-glow,
+  .animate-ngx-float,
+  .animate-ngx-scale {
+    animation-duration: 1s; /* Faster animations */
+  }
+
+  /* Reduce complex animations */
+  .hover-ngx-lift:hover {
+    transform: translateY(-2px); /* Reduced lift */
+  }
+
+  .hover-ngx-glow:hover {
+    box-shadow: var(--ngx-glow-sm); /* Reduced glow */
+  }
+}
+
+/* GPU acceleration for smooth animations */
+.ngx-card,
+.ngx-btn-primary,
+.animate-ngx-glow,
+.animate-ngx-float,
+.hover-ngx-lift {
+  will-change: transform;
+  transform: translateZ(0); /* Force GPU layer */
+}
+
+/* ===== ACCESSIBILITY IMPROVEMENTS ===== */
+
+/* Larger focus rings on mobile */
+@media (max-width: 768px) {
+  .ngx-focus-ring:focus,
+  button:focus,
+  input:focus,
+  select:focus,
+  textarea:focus {
+    outline: 3px solid var(--ngx-electric-violet);
+    outline-offset: 2px;
+  }
+}
+
+/* High contrast support */
+@media (prefers-contrast: high) {
+  .ngx-glass {
+    background: rgba(139, 92, 246, 0.2);
+    border-width: 2px;
+  }
+
+  .ngx-card {
+    border-width: 2px;
+  }
+
+  .text-ngx-gradient {
+    background: none;
+    color: var(--ngx-electric-violet);
+    -webkit-text-fill-color: unset;
+  }
+}
+
+/* ===== MOBILE SPECIFIC UTILITIES ===== */
+
+/* Hide on mobile */
+.ngx-hide-mobile {
+  display: block;
+}
+
+@media (max-width: 768px) {
+  .ngx-hide-mobile {
+    display: none !important;
+  }
+}
+
+/* Show only on mobile */
+.ngx-show-mobile {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .ngx-show-mobile {
+    display: block !important;
+  }
+}
+
+/* Mobile-specific spacing */
+@media (max-width: 768px) {
+  .space-y-ngx-8 > * + * {
+    margin-top: var(--ngx-space-6);
+  }
+
+  .space-y-ngx-6 > * + * {
+    margin-top: var(--ngx-space-4);
+  }
+
+  .gap-ngx-8 {
+    gap: var(--ngx-space-6);
+  }
+
+  .gap-ngx-6 {
+    gap: var(--ngx-space-4);
+  }
+}
+
+/* ===== MOBILE SPECIFIC COMPONENTS ===== */
+
+/* Mobile-optimized voice interface */
+@media (max-width: 768px) {
+  .ngx-voice-interface {
+    position: fixed;
+    bottom: var(--ngx-space-4);
+    right: var(--ngx-space-4);
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    z-index: var(--ngx-z-modal);
+  }
+
+  .ngx-voice-interface.expanded {
+    width: calc(100% - var(--ngx-space-8));
+    height: auto;
+    border-radius: var(--ngx-radius-xl);
+    bottom: var(--ngx-space-4);
+    right: var(--ngx-space-4);
+    left: var(--ngx-space-4);
+  }
+}
+
+/* Mobile-optimized 3D pipeline */
+@media (max-width: 768px) {
+  .ngx-3d-pipeline {
+    height: 300px; /* Reduced height */
+  }
+
+  .ngx-3d-pipeline canvas {
+    transform: scale(0.8); /* Scale down for mobile */
+    transform-origin: center;
+  }
+}
+
+/* ===== SAFE AREA SUPPORT (iPhone X+) ===== */
+
+@supports (padding: max(0px)) {
+  .ngx-mobile {
+    padding-left: max(var(--ngx-space-4), env(safe-area-inset-left));
+    padding-right: max(var(--ngx-space-4), env(safe-area-inset-right));
+    padding-bottom: max(var(--ngx-space-4), env(safe-area-inset-bottom));
+  }
+
+  header {
+    padding-top: max(var(--ngx-space-4), env(safe-area-inset-top));
+  }
+}
+
+/* ===== LOADING OPTIMIZATIONS ===== */
+
+/* Skeleton loading for mobile */
+.ngx-skeleton {
+  background: linear-gradient(90deg, 
+    var(--ngx-surface) 25%, 
+    var(--ngx-surface-hover) 50%, 
+    var(--ngx-surface) 75%
+  );
+  background-size: 200% 100%;
+  animation: ngx-skeleton-loading 1.5s infinite;
+}
+
+@keyframes ngx-skeleton-loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Image loading optimization */
+.ngx-image-container {
+  position: relative;
+  overflow: hidden;
+  background: var(--ngx-surface);
+}
+
+.ngx-image-loading {
+  opacity: 0;
+  transition: opacity var(--ngx-duration-normal);
+}
+
+.ngx-image-loaded {
+  opacity: 1;
+}
+
+/* ===== NETWORK OPTIMIZATIONS ===== */
+
+/* Reduce image quality on slow connections */
+@media (max-width: 768px) and (prefers-reduced-data: reduce) {
+  img {
+    image-rendering: auto;
+  }
+
+  .ngx-glass {
+    backdrop-filter: none; /* Remove expensive backdrop blur */
+    background: rgba(139, 92, 246, 0.1);
+  }
+
+  .animate-ngx-glow,
+  .animate-ngx-float,
+  .animate-ngx-scale {
+    animation: none; /* Disable animations on slow connections */
+  }
+}
+
+/* Print optimizations */
+@media print {
+  .ngx-hide-print {
+    display: none !important;
+  }
+
+  .ngx-card {
+    break-inside: avoid;
+    box-shadow: none;
+    border: 1px solid #ccc;
+  }
+
+  .text-ngx-gradient {
+    background: none;
+    color: #000;
+    -webkit-text-fill-color: unset;
+  }
+}

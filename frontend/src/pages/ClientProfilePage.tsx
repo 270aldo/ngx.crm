@@ -6,8 +6,11 @@ import InteractionTimeline, { Interaction } from "components/InteractionTimeline
 import ClientTasks, { ClientTask } from "components/ClientTasks";
 import NotesSection, { ClientNote } from "components/NotesSection";
 import ClientMetrics, { ClientMetricsData } from "components/ClientMetrics";
-import { supabase } from "../../utils/supabaseClient";
+import NGXMCPIntegration from "../components/NGXMCPIntegration";\nimport AutoTierDetectionWidget from "../components/AutoTierDetectionWidget";
+import { api } from "../services/api";
 import { toast } from "sonner";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Brain, Zap } from "lucide-react";
 
 // Define interfaces for the data we expect from Supabase
 export interface ContactProfile {
@@ -60,19 +63,15 @@ const ClientProfilePage: React.FC = () => {
     }
 
     const fetchContactData = async () => {
-      // ... (fetchContactData implementation remains the same)
       setLoading(true);
       try {
-        const { data, error } = await supabase
-          .from("contacts")
-          .select("id, name, email, phone, program_type, created_at")
-          .eq("id", contactId)
-          .single();
-
-        if (error) throw error;
-
+        const data = await api.contacts.get(contactId);
         if (data) {
-          setContact({ ...data, program: data.program_type });
+          setContact({ 
+            ...data, 
+            program: data.program_type,
+            id: data.id 
+          });
         } else {
           toast.error(`Contact with ID ${contactId} not found.`);
           setContact(null);
@@ -87,23 +86,15 @@ const ClientProfilePage: React.FC = () => {
     };
 
     const fetchClientDeals = async () => {
-      // ... (fetchClientDeals implementation remains the same)
       setDealsLoading(true);
       try {
-        const { data: dealsData, error: dealsError } = await supabase
-          .from("deals")
-          .select("id, name, value_amount, deal_stage_id, created_at, closed_at")
-          .eq("contact_id", contactId)
-          .order("created_at", { ascending: false });
-
-        if (dealsError) throw dealsError;
-        
+        const dealsData = await api.contacts.getDeals(contactId);
         const transformedDeals = dealsData?.map(d => ({
-            id: d.id,
-            name: d.name || 'Unnamed Deal',
-            stage: d.deal_stage_id, 
-            value: d.value_amount || 0,
-            closeDate: d.closed_at,
+          id: d.id,
+          name: d.name || 'Unnamed Deal',
+          stage: d.deal_stages?.name || d.deal_stage_id || 'Unknown', 
+          value: d.value_amount || 0,
+          closeDate: d.closed_at,
         })) || [];
         setClientDeals(transformedDeals);
       } catch (error: any) {
@@ -116,17 +107,9 @@ const ClientProfilePage: React.FC = () => {
     };
 
     const fetchClientInteractions = async () => {
-      // ... (fetchClientInteractions implementation remains the same)
       setInteractionsLoading(true);
       try {
-        const { data: interactionsData, error: interactionsError } = await supabase
-          .from("interactions") 
-          .select("id, type, summary, created_at, channel") 
-          .eq("contact_id", contactId) 
-          .order("created_at", { ascending: false });
-
-        if (interactionsError) throw interactionsError;
-
+        const interactionsData = await api.contacts.getInteractions(contactId);
         const mappedInteractions: Interaction[] = interactionsData?.map(i => ({
           id: i.id,
           type: i.type || i.channel || "Interaction", 
@@ -134,7 +117,6 @@ const ClientProfilePage: React.FC = () => {
           summary: i.summary || "No summary provided",
         })) || [];
         setClientInteractions(mappedInteractions);
-
       } catch (error: any) {
         console.error("Error fetching client interactions:", error);
         toast.error(`Failed to fetch interactions: ${error.message}`);
@@ -147,26 +129,16 @@ const ClientProfilePage: React.FC = () => {
     const fetchClientTasks = async () => {
       setTasksLoading(true);
       try {
-        const { data: tasksData, error: tasksError } = await supabase
-          .from("tasks") // Using your table name 'tasks'
-          .select("id, title, description, due_date, status, priority, created_at, assigned_to_user_id") // Selected relevant columns from your table structure
-          .eq("related_contact_id", contactId) // Using your column 'related_contact_id'
-          .order("due_date", { ascending: true, nullsFirst: false }); // Order by due date
-
-        if (tasksError) throw tasksError;
-
+        const tasksData = await api.contacts.getTasks(contactId);
         const mappedTasks: ClientTask[] = tasksData?.map(t => ({
           id: t.id,
           title: t.title || "Untitled Task",
           dueDate: t.due_date,
           status: t.status || "Unknown",
-          description: t.description, // Optional, can be null
-          priority: t.priority, // Optional, can be null
-          // assignedToUserId: t.assigned_to_user_id, // We have this data if needed later
-          // createdAt: t.created_at, // We have this data if needed later
+          description: t.description,
+          priority: t.priority,
         })) || [];
         setClientTasks(mappedTasks);
-
       } catch (error: any) {
         console.error("Error fetching client tasks:", error);
         toast.error(`Failed to fetch tasks: ${error.message}`);
@@ -184,36 +156,90 @@ const ClientProfilePage: React.FC = () => {
   }, [contactId]);
 
   if (loading) {
-    return <div className="p-6 text-slate-300">Loading client profile...</div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen ngx-glass">
+        <div className="text-center">
+          <div className="ngx-spinner mb-4 mx-auto"></div>
+          <p className="text-ngx-gradient font-ngx-primary font-semibold">Cargando perfil del cliente...</p>
+        </div>
+      </div>
+    );
   }
 
   if (!contact) {
-    return <div className="p-6 text-red-400">Client not found or no ID provided.</div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Card className="max-w-md">
+          <CardContent className="text-center py-8">
+            <p className="text-red-400 font-ngx-primary">Cliente no encontrado o ID no proporcionado.</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   return (
-    <div className="p-4 md:p-6 bg-slate-950 min-h-screen text-slate-100">
-      <header className="mb-6">
-        <h1 className="text-3xl font-bold text-slate-50">Client Profile: {contact.name}</h1>
+    <div className="container-ngx min-h-screen">
+      {/* NGX Header */}
+      <header className="mb-ngx-8 text-center py-ngx-6">
+        <div className="flex items-center justify-center space-x-ngx-4 mb-ngx-4">
+          <div className="w-12 h-12 rounded-ngx-full ngx-gradient-primary flex items-center justify-center animate-ngx-glow">
+            <Brain className="w-6 h-6 text-ngx-white" />
+          </div>
+          <h1 className="text-ngx-4xl font-ngx-primary font-bold text-ngx-gradient">
+            Perfil Inteligente: {contact.name}
+          </h1>
+          <div className="w-12 h-12 rounded-ngx-full ngx-gradient-primary flex items-center justify-center animate-ngx-glow">
+            <Zap className="w-6 h-6 text-ngx-white" />
+          </div>
+        </div>
+        <p className="text-ngx-lg font-ngx-secondary text-ngx-text-secondary">
+          Análisis completo potenciado por NGX_Closer.Agent
+        </p>
       </header>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-ngx-8">
         {/* Left Column / Main Info */} 
-        <div className="lg:col-span-2 space-y-6">
+        <div className="xl:col-span-2 space-y-ngx-6">
           <ContactInfoCard contact={contact} />
           <DealsHistory deals={clientDeals} contactId={contact.id.toString()} isLoading={dealsLoading} />
           <InteractionTimeline interactions={clientInteractions} contactId={contact.id.toString()} isLoading={interactionsLoading} />
         </div>
 
-        {/* Right Column / Sidebar Info */} 
-        <div className="space-y-6">
+        {/* Right Column / NGX AI Sidebar */} 
+        <div className="space-y-ngx-6">
+          {/* Auto Tier Detection Widget */}
+          <AutoTierDetectionWidget 
+            contactId={contact.id.toString()}
+            autoDetect={true}
+            showInsights={true}
+            showRecommendations={true}
+          />
+          
+          {/* NGX MCP Integration - AI Features */}
+          <Card className="border-l-4 border-l-ngx-electric-violet">
+            <CardHeader>
+              <CardTitle className="flex items-center text-ngx-gradient">
+                <Brain className="w-5 h-5 mr-2" />
+                NGX Intelligence Hub
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <NGXMCPIntegration 
+                contactId={contact.id.toString()}
+                className="space-y-4"
+              />
+            </CardContent>
+          </Card>
+          
+          {/* Traditional Components */}
           <ClientMetrics metrics={dummyMetrics} />
           <ClientTasks tasks={clientTasks} contactId={contact.id.toString()} isLoading={tasksLoading} />
           <NotesSection notes={dummyNotes} contactId={contact.id.toString()} />
         </div>
       </div>
     </div>
-  );
+  );}
 };
 
 export default ClientProfilePage;

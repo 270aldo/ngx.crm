@@ -1,10 +1,15 @@
 import os
 import pathlib
 import json
-import dotenv
 from fastapi import FastAPI, APIRouter, Depends
 
-dotenv.load_dotenv()
+# Load environment variables from .env file
+try:
+    import dotenv
+    dotenv.load_dotenv()
+except ImportError:
+    # dotenv might not be available in all environments
+    pass
 
 from databutton_app.mw.auth_mw import AuthConfig, get_authorized_user
 
@@ -77,7 +82,17 @@ def get_firebase_config() -> dict | None:
 def create_app() -> FastAPI:
     """Create the app. This is called by uvicorn with the factory option to construct the app object."""
     app = FastAPI()
+    
+    # Include main CRM routers
     app.include_router(import_api_routers())
+    
+    # Include agent usage router (from our new integration)
+    try:
+        from app.apis.agent_usage import router as agent_usage_router
+        app.include_router(agent_usage_router, prefix="/api/v1")
+        print("✅ Agent Usage API router included")
+    except ImportError as e:
+        print(f"⚠️ Agent Usage router not available: {e}")
 
     for route in app.routes:
         if hasattr(route, "methods"):

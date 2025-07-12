@@ -4,6 +4,7 @@ import { Head } from "./internal-components/Head";
 import { ThemeProvider } from "./internal-components/ThemeProvider";
 import { OuterErrorBoundary } from "./prod-components/OuterErrorBoundary";
 import { router } from "./router";
+import TwentyFirstDevToolbar from "./components/21stDevToolbar";
 
 export const AppWrapper = () => {
   return (
@@ -11,6 +12,7 @@ export const AppWrapper = () => {
       <ThemeProvider defaultTheme={DEFAULT_THEME}>
         <RouterProvider router={router} />
         <Head />
+        <TwentyFirstDevToolbar />
       </ThemeProvider>
     </OuterErrorBoundary>
   );
